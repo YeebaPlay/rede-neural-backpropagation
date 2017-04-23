@@ -12,7 +12,7 @@ public interface NutrientesRepository extends JpaRepository<Nutriente, Integer>{
 	
 	List<Nutriente> findAll();
 
-	@Query("SELECT a FROM #{#entityName} WHERE id = :id")
+	@Query("SELECT a FROM #{#entityName} a WHERE a.id = :id")
 	List<Nutriente> findByNutriente(@Param("id") Integer id);
 	
 }
