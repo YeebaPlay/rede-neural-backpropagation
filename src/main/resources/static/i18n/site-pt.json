@@ -1,0 +1,79 @@
+{
+  "parsley":{
+    "This value is required": "Este campo é obrigatório"
+  },	
+  "dashboard": {
+    "WELCOME": "Bem Vindo"
+  },
+  "sidebar": {
+    "WELCOME": "Bem Vindo",
+    "heading": {
+      "HEADER": "Menu de Navegação",
+      "COMPONENTS": "Componentes",
+      "MORE": "Mais"
+    },
+    "nav": {
+      "DASHBOARD": "Dashboard",
+      "WIDGETS": "Widgets",
+      "DOCUMENTATION": "Documentação",
+      "element": {
+        "ELEMENTS": "Elementos",
+        "BUTTON": "Botões",
+        "COLOR": "Cores",
+        "NOTIFICATION": "Notificações",
+        "CAROUSEL": "Carrossel",
+        "SPINNER": "Spinner",
+        "ANIMATION": "Animação",
+        "DROPDOWN": "Dropdown",
+        "PANEL": "Painel",
+        "PORTLET": "Portlet",
+        "GRID": "Grid",
+        "GRID_MASONRY": "Grid Masonry",
+        "TYPO": "Tipografia",
+        "FONT_ICON": "Font Icons",
+        "WEATHER_ICON": "Weather Icons"
+      },
+      "form": {
+        "FORM": "Formulário",
+        "STANDARD": "Padrão",
+        "EXTENDED": "Estendido",
+        "VALIDATION": "Validação"
+      },
+      "chart": {
+        "CHART": "Gráficos",
+        "FLOT": "Flot",
+        "RADIAL": "Radial"
+      },
+      "table": {
+        "TABLE": "Tabela",
+        "STANDARD": "Padrão",
+        "EXTENDED": "Estendido",
+        "DATATABLE": "Tabela de Dados"
+      },
+      "map": {
+        "MAP": "Mapas",
+        "GOOGLE": "Google Map",
+        "VECTOR": "Vector Map"
+      },
+      "extra": {
+        "EXTRA": "Extra",
+        "MAILBOX": "Caixa de Correio",
+        "TIMELINE": "Timeline",
+        "CALENDAR": "Calendário",
+        "INVOICE": "Invoice",
+        "SEARCH": "Pesquisa",
+        "TODO": "Todo List",
+        "PROFILE": "Perfil"
+      },
+      "pages": {
+        "PAGES": "Páginas",
+        "LOGIN": "Entrar",
+        "REGISTER": "Registrar",
+        "RECOVER": "Recuperar Senha",
+        "PROFILE": "Perfil",
+        "LOCK": "Bloquear",
+        "STARTER": "Template Inicial"
+      }
+    }
+  }
+}

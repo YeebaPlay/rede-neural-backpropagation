@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="utf-8"></meta>
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"></meta>
+   <meta name="description" content="Bootstrap Admin App + jQuery"></meta>
+   <meta name="keywords" content="app, responsive, jquery, bootstrap, dashboard, admin"></meta>
+   <title>Angle - Bootstrap Admin Template</title>
+   <!-- =============== VENDOR STYLES ===============-->
+   <!-- FONT AWESOME-->
+   <link rel="stylesheet" href="../vendor/fontawesome/css/font-awesome.min.css"></link>
+   <!-- SIMPLE LINE ICONS-->
+   <link rel="stylesheet" href="../vendor/simple-line-icons/css/simple-line-icons.css"></link>
+   <!-- =============== BOOTSTRAP STYLES ===============-->
+   <link rel="stylesheet" href="css/bootstrap.css" id="bscss"></link>
+   <!-- =============== APP STYLES ===============-->
+   <link rel="stylesheet" href="css/app.css" id="maincss"></link>
+</head>
+
+<body>
+   <div class="wrapper">
+      <div class="block-center mt-xl wd-xl">
+         <!-- START panel-->
+         <div class="panel panel-dark panel-flat">
+            <div class="panel-heading text-center">
+               <a href="#">
+                  <img src="img/logo.png" alt="Image" class="block-center img-rounded"/>
+               </a>
+            </div>
+            <div class="panel-body">
+               <p class="text-center pv">Inscreva-se para obter acesso.</p>
+               <form role="form" data-parsley-validate="" th:action="@{/usuarios}"  class="mb-lg" method="POST">
+                  <div class="form-group has-feedback">
+                     <label class="text-muted">Nome Completo</label>
+                     <input name="nome" type="text" placeholder="Nome Completo" autocomplete="off" class="form-control" required="required"></input>
+                     <span class="fa fa-user form-control-feedback text-muted"></span>
+                  </div>
+                  <div class="form-group has-feedback">
+                     <label class="text-muted">E-mail</label>
+                     <input name="username" type="email" placeholder="E-mail" autocomplete="off" class="form-control" required="required"></input>
+                     <span class="fa fa-envelope form-control-feedback text-muted"></span>
+                  </div>
+                  <div class="form-group has-feedback">
+                     <label for="signupInputPassword1" class="text-muted">Senha</label>
+                     <input id="signupInputPassword1" name="password" type="password" placeholder="Password" autocomplete="off" required="required" class="form-control"></input>
+                     <span class="fa fa-lock form-control-feedback text-muted"></span>
+                  </div>
+                  <div class="form-group has-feedback">
+                     <label for="signupInputRePassword1" class="text-muted">Repita a Senha</label>
+                     <input id="signupInputRePassword1" type="password" placeholder="Repita a Senha" autocomplete="off" required="required" data-parsley-equalto="#signupInputPassword1" class="form-control"></input>
+                     <span class="fa fa-lock form-control-feedback text-muted"></span>
+                  </div>
+                  <div class="clearfix">
+                     <div class="checkbox c-checkbox pull-left mt0">
+                        <label>
+                           <input type="checkbox" value="" name="agreed" required="required"></input>
+                           <span class="fa fa-check"></span>Eu aceito os <a href="#">termos</a>
+                        </label>
+                     </div>
+                  </div>
+                  <button type="submit" class="btn btn-block btn-primary mt-lg">Criar conta</button>
+               </form>
+               <p class="pt-lg text-center">Já possui uma conta?</p><a href="login" class="btn btn-block btn-default">Conectar</a>
+            </div>
+         </div>
+         <!-- END panel-->
+         <div class="p-lg text-center">
+            <span>&copy;</span>
+            <span>2016</span>
+            <span>-</span>
+            <span>Angle</span>
+            <span>Bootstrap Admin Template</span>
+         </div>
+      </div>
+   </div>
+   <!-- =============== VENDOR SCRIPTS ===============-->
+   <!-- MODERNIZR-->
+   <script src="../vendor/modernizr/modernizr.custom.js"></script>
+   <!-- JQUERY-->
+   <script src="../vendor/jquery/dist/jquery.js"></script>
+   <!-- BOOTSTRAP-->
+   <script src="../vendor/bootstrap/dist/js/bootstrap.js"></script>
+   <!-- STORAGE API-->
+   <script src="../vendor/jQuery-Storage-API/jquery.storageapi.js"></script>
+   <!-- PARSLEY-->
+   <script src="../vendor/parsleyjs/dist/parsley.min.js"></script>
+   <!-- =============== APP SCRIPTS ===============-->
+   <script src="js/app.js"></script>
+</body>
+
+</html>
+
+
+
+<!-- 
+<section id="form">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-4 col-sm-offset-1">
+					<div class="login-form">
+						<h2>Login to your account</h2>
+						<form th:action="@{/login}" method="post">
+							<input type="text" name="username" placeholder="Username"></input>
+							<input type="password" placeholder="Password" name="password"></input>
+							<span>
+								<input type="checkbox" class="checkbox"> </input>
+								Keep me signed in
+							</span>
+							<button type="submit" class="btn btn-default">Login</button>
+						</form>
+					</div>
+				</div>
+				<div class="col-sm-1">
+					<h2 class="or">OR</h2>
+				</div>
+				<div class="col-sm-4">
+					<div class="signup-form">
+						<h2>New User Signup!</h2>
+						<form action="addUser" method="post">
+							<input type="text" name="username" placeholder="Name"></input>
+							<input type="email" name="email" placeholder="Email Address"></input>
+							<input type="password" name="password" placeholder="Password"></input>
+							<button type="submit" class="btn btn-default">Signup</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+ -->
