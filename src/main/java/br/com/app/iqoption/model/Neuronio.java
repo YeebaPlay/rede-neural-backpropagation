@@ -9,10 +9,6 @@ import javax.persistence.Id;
 
 @Entity
 public class Neuronio {
-	
-	public Neuronio (){
-		
-	}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +29,21 @@ public class Neuronio {
 	private double[] entradas; //Todas as entradas de um processamento
 	private double[] saidas; //Todas as saídas de um processamento
 
+	/*public Neuronio (Integer id, double[] valorSaida, double[] sPeso, double[] deltaPesoSaida, double[] valorEntrada, double[] ePeso, double[] deltaPesoEscondida,
+			double[] valorEsperado, int doenca, double[] pesos, double[] entradas, double[] saidas){
+		this.id = id;
+		this.valorSaida = valorSaida;
+		this.sPeso = sPeso;
+		this.deltaPesoSaida = deltaPesoSaida;
+		this.valorEntrada = valorEntrada;
+		this.ePeso = ePeso;
+		this.deltaPesoEscondida = deltaPesoEscondida;
+		this.valorEsperado = valorEsperado;
+		this.doenca = doenca;
+		this.pesos = pesos;
+		this.entradas = entradas;
+		this.saidas = saidas;
+	}*/
 	
 
 	public double[] getValorSaida() {

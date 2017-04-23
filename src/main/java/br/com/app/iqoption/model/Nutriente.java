@@ -7,10 +7,6 @@ import javax.persistence.Id;
 
 @Entity
 public class Nutriente {
-
-	public Nutriente(){
-		
-	}
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +16,15 @@ public class Nutriente {
 	private float LDL;
 	private float TG;
 	private float glicose;
+	
+	public Nutriente(Integer id, float CT, float HDL, float LDL, float TG, float glicose){
+		this.id = id;
+		this.CT = CT;
+		this.HDL = HDL;
+		this.LDL = LDL;
+		this.TG = TG;
+		this.glicose = glicose;
+	}
 	
 	
 	
