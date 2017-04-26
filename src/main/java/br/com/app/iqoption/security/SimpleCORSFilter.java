@@ -35,12 +35,12 @@ public class SimpleCORSFilter extends GenericFilterBean {
 		res.setHeader("Access-Control-Allow-Credentials", "true");
 		res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, X-Requested-With");
 
-		HttpServletRequest req = (HttpServletRequest) request;
+		/*HttpServletRequest req = (HttpServletRequest) request;
 		// if(req.getMethod().equalsIgnoreCase("/OPTIONS/")){
 		// chain.doFilter(request, response);
 		// }
 
-		if (!req.getRequestURI().contains("/login/")) {
+		if (!req.getRequestURI().contains("/nutrientes/treinamento")) {
 			String header = req.getHeader("Authorization");
 
 			if (header == null || !header.startsWith("Bearer ")) {
@@ -49,13 +49,14 @@ public class SimpleCORSFilter extends GenericFilterBean {
 			String token = header.substring(7);
 
 			try {
-				Jwts.parser().setSigningKey("asdasd@asdas").parseClaimsJwt(token).getBody();
+				Jwts.parser().setSigningKey("Key@123").parseClaimsJwt(token).getBody();
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
-		}
+		}*/
 		
 		chain.doFilter(request, response);
+		
 		
 	}
 

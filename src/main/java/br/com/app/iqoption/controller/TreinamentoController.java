@@ -5,162 +5,186 @@ import java.util.ArrayList;
 import br.com.app.iqoption.model.Neuronio;
 
 public class TreinamentoController {
+	
+	/**
+	 * Entrada de -0.9407975103162227 na funcao de ativacao saiu um numero -32.78236305065465
+	 */
 
 	// Inciar variaveis
-	private int doencaAtual;
-	private double Momento;
-	private double SaidaDesejada;
+	private static int cicloAtual = 0;
+	private double Momento = 0.05;
+	private double saidaDesejada;
 
-	private double[] nSaida;
-	private double[] oSaida;
-	// private double ErroParcial;
-	private double SigmaSaida;
-	private double SigmaEscondida;
-	private double[] oEscondida;
-	private double[] nEscondida;
+	
+	//Resultados dos neuronios
+	private double[] neuronioSaida;
+	private double[] resultadoSomaSaida;
+	private double[] resultadoSomaEscondida;
+	private double[] neuronioEscondida;
+	
+	//Erro da rede
+	private double sigmaSaida; //Erro da rede
+	private double sigmaEscondida; //Erro da rede
 	
 	//Somatorio dos deltas
-	private double[] somaDelta = null;
+	private double[] somaDeltaEscondida;
+	private double[] somaDeltaSaida;
 
 	//Constantes
-	private static final int QUANTIDADEMAXIMA = 0;
+	private final int CICLO = 10;
 	private static final double TAXAAPRENDIZAGEM = 0.5;
 	private static final int NUMERODENEURONIOSENTRADA = 5;// + bias
-	private static final int NUMERODENEURONIOSESCONDIDA = 5;// + bias
-	private static final int[] DOENCAS = { 0, 1, 2, 3 }; // 0 = bom 1 = infarto 2 = hiper 3 =
-											// derrame
+	private static final int NUMERODENEURONIOSESCONDIDA = 10;// + bias
+	private static final int[] DOENCAS = { 0, 1, 2, 3 }; // 0 = bom 1 = infarto 2 = hiper 3 = derrame
 
-	// Sigma do erro ao quadrado dividido por 2
-
-	ArrayList<Neuronio> listaNeuroniosEntrada = new ArrayList<>();;
-	ArrayList<Neuronio> listaNeuroniosSaida = new ArrayList<>();;
-	ArrayList<Neuronio> listaNeuroniosEscondido = new ArrayList<>();;
+	//Variaveis auxiliares
+	private double erroQuadraticoParcial;
+	ArrayList<Double> listaErrosQuadradicos = new ArrayList<Double>();
+	double pesoRede;
+	double valorEntradaRede;
+	double valorSaidaRede;
+	double resultadoDerivadaFuncaoAtivacao;
+	
+	ArrayList<Neuronio> listaNeuroniosEntrada = new ArrayList<>();
+	ArrayList<Neuronio> listaNeuroniosSaida = new ArrayList<>();
+	ArrayList<Neuronio> listaNeuroniosEscondido = new ArrayList<>();
+	
+	int tamanhoLista = 0;
 
 	// Onde será treinada a rede
 	public void TreinamentoRede() {
-		
+
 		//Gerando as listas de doecas
 		GerarListasDoencas();
+		
+		//Iniciando todos os arrays
+		iniciarVariaveis();
+		tamanhoLista = listaNeuroniosEntrada.size();
+		
+		while(CICLO > cicloAtual){
+			erroQuadraticoParcial = 0;
+			///////////// PASSO 2///////////////
+			for (int posicaoAtualLista = 0; posicaoAtualLista < tamanhoLista; posicaoAtualLista++) {
+				///////// PASSO 3/////////
+			
+				//===================================================================
+				// calcular cada neuronio da camada de entrada com a escondida OK
+				//===================================================================
+				for (int i = 0; i < NUMERODENEURONIOSESCONDIDA; i++) {
+					neuronioEscondida[i] = 0.0;
+					//for cada neuronio da camada de entrada
+					for(int j = 0; j < NUMERODENEURONIOSENTRADA; j++){
+						//Soma do valor da multiplicacao camada de entrada sobre a escondida
+						valorEntradaRede = listaNeuroniosEntrada.get(posicaoAtualLista).getValor()[j];
+						pesoRede = listaNeuroniosEscondido.get(posicaoAtualLista).getPesos()[i];
+						neuronioEscondida[i] += (valorEntradaRede * pesoRede);
+					}
+					//Somar o bias
+					pesoRede = listaNeuroniosEscondido.get(posicaoAtualLista).getPesos()[NUMERODENEURONIOSESCONDIDA];
+					neuronioEscondida[i] = neuronioEscondida[i] + pesoRede;
+					
+					// Agora temos que aplicar a funcao de ativacao 
+					// Funcao de ativacao = (2 / (1 + exp(-x)) -1
+				    resultadoSomaEscondida[i] = FuncaoAtivacao(neuronioEscondida[i]);
+				}
+				
+				//===================================================================
+				// Calcular cada neuronio da camada escondida com a camada de saida
+				//===================================================================
+				for (int i = 0; i < listaNeuroniosSaida.get(posicaoAtualLista).getValorEsperado().length; i++) {
+					neuronioSaida[i] = 0.0;
+					//For cada neuronio da camada escondida
+					for(int j = 0; j < NUMERODENEURONIOSESCONDIDA; j++){
+						//Agora vamos fazer o calculo da entrada do neuronio de saida
+						pesoRede = listaNeuroniosSaida.get(posicaoAtualLista).getPesos()[j];
+						neuronioSaida[i] += (resultadoSomaEscondida[j] * pesoRede);
+					}
+					pesoRede = listaNeuroniosSaida.get(posicaoAtualLista).getPesos()[NUMERODENEURONIOSESCONDIDA];
+					neuronioSaida[i] +=  pesoRede;// somando o bias
+					
+					// Agora temos que aplicar a funcao de ativacao
+					// Funcao de ativacao = (2 / (1 + exp(-x)) -1
+					resultadoSomaSaida[i] = FuncaoAtivacao(neuronioSaida[i]);
+					
+					///////// PASSO 6 - BACKPROGATION ////////////
+					
+					//Obtendo a saida desejada
+					saidaDesejada = listaNeuroniosSaida.get(posicaoAtualLista).getValorEsperado()[i];
+	
+					resultadoDerivadaFuncaoAtivacao = Neuronio.DerivadaDaFuncaoDeAtivacao(neuronioSaida[i]);
+					// calcular o sigma (variacao do erro)
+					sigmaSaida = (double) ((saidaDesejada - resultadoSomaSaida[i]) * resultadoDerivadaFuncaoAtivacao);
+	
+					erroQuadraticoParcial += (0.5)*((saidaDesejada - resultadoSomaSaida[i])*(saidaDesejada - resultadoSomaSaida[i]));
+					
+					//Calcular a variacao dos pesos do neuronio de saida
+					for (int k = 0; k < NUMERODENEURONIOSESCONDIDA; k++){
+						listaNeuroniosSaida.get(posicaoAtualLista).deltaPeso[k] = (double) ((TAXAAPRENDIZAGEM * sigmaSaida * resultadoSomaEscondida[k]) + (Momento * listaNeuroniosSaida.get(posicaoAtualLista).deltaPeso[k]));
+					}
+					//Bias não tem o resultadoEscondida, por isso feito separadamente
+					listaNeuroniosSaida.get(posicaoAtualLista).deltaPeso[NUMERODENEURONIOSESCONDIDA] = (double) ((TAXAAPRENDIZAGEM * sigmaSaida) + (Momento * listaNeuroniosSaida.get(posicaoAtualLista).deltaPeso[NUMERODENEURONIOSESCONDIDA]));
+				}
 
-		doencaAtual = 0;
-		while(doencaAtual < QUANTIDADEMAXIMA){
-			while (doencaAtual < DOENCAS.length) {
+				///////// PASSO 7//////////
+
+				//===================================================================
+				// Atualizar todos os pesos das camadas escondidas e de saida
+				//===================================================================
 				
-				// ErroQuadraticoParcial = 0;
-				doencaAtual++;// incrementar o ciclo
-				// ErroParcial = 0.0;//zerar o erro parcial
-	
-				///////////// PASSO 2///////////////
-				for (int VetorAtual = 0; VetorAtual < listaNeuroniosEntrada.size(); VetorAtual++) {
-					///////// PASSO 3/////////
-				
-					//===================================================================
-					// calcular cada neuronio da camada de entrada com a escondida
-					//===================================================================
-					for (int i = 0; i < NUMERODENEURONIOSENTRADA; i++) {
-						nEscondida[i] = 0.0;
-						//for cada neuronio da camada de entrada
-						for(int j = 0; j < NUMERODENEURONIOSESCONDIDA; j++){
-							//Soma do valor da multiplicacao camada de entrada sobre a escondida
-							nEscondida[i] = nEscondida[i] + (listaNeuroniosEntrada.get(VetorAtual).getValorEntrada()[i] * listaNeuroniosEscondido.get(VetorAtual).getePeso()[j]);
-					
-							// Agora temos que aplicar a funcao de ativacao 
-							// Funcao de ativacao = (2 / (1 + exp(-x)) -1
-						   oEscondida[i] = (double) ((2 / (1 + Math.pow(-1 * nEscondida[i], 1))) - 1);
-						}
-						
-						// somar com o valor de cada bias da entrada para escondida bias
-						nEscondida[i] = nEscondida[i] + listaNeuroniosEscondido.get(VetorAtual).getePeso()[5];
-	
+				// percorrer todos os neuronios da camada escondida com a cada de entrada para calcular os novos pesos
+				for (int i = 0; i < NUMERODENEURONIOSESCONDIDA; i++) {
+					for(int j = 0; j < NUMERODENEURONIOSENTRADA; j++){
+						// calcular o sigma
+						sigmaEscondida = sigmaSaida * listaNeuroniosSaida.get(posicaoAtualLista).getPesos()[j];
+						sigmaEscondida = sigmaEscondida * Neuronio.DerivadaDaFuncaoDeAtivacao(neuronioEscondida[j]);
+						//variacao dos pesos
+						listaNeuroniosEscondido.get(posicaoAtualLista).deltaPeso[i] = (TAXAAPRENDIZAGEM * sigmaEscondida * (listaNeuroniosEntrada.get(posicaoAtualLista).getValor()[j])) + (Momento * listaNeuroniosEscondido.get(posicaoAtualLista).deltaPeso[i]);
 					}
+					// variacao do bias
+					listaNeuroniosEscondido.get(posicaoAtualLista).deltaPeso[NUMERODENEURONIOSESCONDIDA] = (TAXAAPRENDIZAGEM * sigmaEscondida) + (Momento * listaNeuroniosEscondido.get(posicaoAtualLista).deltaPeso[NUMERODENEURONIOSESCONDIDA]);
 					
-					//===================================================================
-					// Calcular cada neuronio da camada escondida com a camada de saida
-					//===================================================================
-					for (int i = 0; i < listaNeuroniosSaida.get(VetorAtual).getValorEsperado().length; i++) {
-						nSaida[i] = 0.0;
-						//For cada neuronio da camada escondida
-						for(int j = 0; j < NUMERODENEURONIOSESCONDIDA; j++){
-							//Agora vamos fazer o calculo da entrada do neuronio de saida
-							nSaida[i] = nSaida[i] + (oEscondida[j] * listaNeuroniosSaida.get(VetorAtual).getsPeso()[i]);
-				
-							nSaida[i] = nSaida[i] + listaNeuroniosSaida.get(VetorAtual).getsPeso()[5];// somando o bias
-																									
-							// Agora temos que aplicar a funcao de ativacao
-							// Funcao de ativacao = (2 / (1 + exp(-x)) -1
-							double exponencial = Math.pow(-1, nSaida[i]);
-							oSaida[i] = (double) ((2 / (1 + exponencial)) - 1);
-							
-							///////// PASSO 6 - BACKPROGATION ////////////
-							
-							//Calculando a saida desejada
-							SaidaDesejada = listaNeuroniosEntrada.get(VetorAtual).getValorEsperado()[j];
-			
-							// calcular o sigma
-							SigmaSaida = (double) ((SaidaDesejada - oSaida[i]) * Neuronio.DerivadaDaFuncaoDeAtivacao(nSaida[i]));
-			
-							//ErroParcial += (0.5)*((SaidaDesejada - OutSaida)*(SaidaDesejada - OutSaida));
-			
-							//Calcular a variacao dos pesos do neuronio de saida
-							for (int k = 0; k < NUMERODENEURONIOSENTRADA; k++){
-								listaNeuroniosSaida.get(VetorAtual).deltaPesoSaida[i] = (double) ((TAXAAPRENDIZAGEM * SigmaSaida * oEscondida[i]) + (Momento * listaNeuroniosSaida.get(VetorAtual).deltaPesoSaida[i]));
-							}
-							
-							//Atualizar o peso do bias
-							double novoBias = (double) ((TAXAAPRENDIZAGEM * SigmaSaida)
-									+ (Momento * listaNeuroniosSaida.get(VetorAtual).getsPeso()[5]));
-							listaNeuroniosSaida.get(VetorAtual).setNovoBiasSaida(novoBias);
-						}
+					// Atualizar os pesos atualizardos no laco de cima
+					for (int k = 0; k <= NUMERODENEURONIOSENTRADA; k++){
+						somaDeltaEscondida[i] += listaNeuroniosEscondido.get(posicaoAtualLista).deltaPeso[k];
 					}
-	
-					///////// PASSO 7//////////
-	
-					//===================================================================
-					// Atualizar todos os pesos das camadas escondidas e de saida
-					//===================================================================
-					
-					// percorrer todos os neuronios da camada escondida com a cada de entrada
-					for (int i = 0; i < listaNeuroniosEscondido.get(VetorAtual).getValorEntrada().length; i++) {
-						for(int j = 0; j < NUMERODENEURONIOSENTRADA; j++){
-							// calcular o sigma
-							SigmaEscondida = SigmaSaida * listaNeuroniosSaida.get(VetorAtual).getsPeso()[j];
-							SigmaEscondida = SigmaEscondida * Neuronio.DerivadaDaFuncaoDeAtivacao(nEscondida[j]);
+				}
+				
+				listaNeuroniosEscondido.get(posicaoAtualLista).setPesos(somaDeltaEscondida);
+
+				///////// PASSO 8////////////
+				
+				//Atualizar os pesos da camada de saida para camada escondida
+				for (int j = 0; j <= NUMERODENEURONIOSESCONDIDA; j++){
+					//O bias está no último elemento
+					somaDeltaSaida[j] = listaNeuroniosSaida.get(posicaoAtualLista).deltaPeso[j];
+				}
+				listaNeuroniosSaida.get(posicaoAtualLista).setPesos(somaDeltaSaida);
+			} // for vetor atual
+			listaErrosQuadradicos.add(erroQuadraticoParcial);
+			cicloAtual++;
+		}//while ciclos
+		System.out.println("Sucesso!!");
 		
-							listaNeuroniosEscondido.get(VetorAtual).deltaPesoEscondida[5] = (TAXAAPRENDIZAGEM * SigmaEscondida
-									* (listaNeuroniosEntrada.get(VetorAtual).getValorEntrada()[i]))
-									+ (Momento * listaNeuroniosEscondido.get(VetorAtual).deltaPesoEscondida[5]);
-							
-							// variacao do bias
-							listaNeuroniosEscondido.get(VetorAtual).deltaPesoEscondida[5] = (TAXAAPRENDIZAGEM * SigmaEscondida)
-									+ (Momento * listaNeuroniosEscondido.get(VetorAtual).deltaPesoEscondida[1]);
-		
-							// Atualizar os pesos
-							for (int k = 0; k <= NUMERODENEURONIOSENTRADA; k++){
-								somaDelta[i] += listaNeuroniosEscondido.get(VetorAtual).deltaPesoEscondida[k];
-							}
-						}
-						listaNeuroniosEscondido.get(i).setePeso(somaDelta);
-					}
-	
-					///////// PASSO 8////////////
-					
-					somaDelta = null;
-					//Atualizar os pesos da camada de saida para camada escondida
-					for (int i = 0; i < listaNeuroniosSaida.get(VetorAtual).getValorEsperado().length; i++) {
-						for (int j = 0; j <= NUMERODENEURONIOSESCONDIDA; j++){
-							//O bias está no último elemento
-							somaDelta[i] = listaNeuroniosSaida.get(VetorAtual).deltaPesoSaida[j];
-						}
-						listaNeuroniosSaida.get(VetorAtual).setsPeso(somaDelta);
-					}
-				} // for vetor atual
-	
-			} // while
+		for(int i = 0; i < listaErrosQuadradicos.size(); i++){
+			System.out.println("Ciclo "+i+" = "+listaErrosQuadradicos.get(i));
+			
 		}
+		
+	}//Fim do metodo
+
+	private void iniciarVariaveis() {
+		// TODO Auto-generated method stub
+		erroQuadraticoParcial = 0;
+		neuronioSaida = new double[listaNeuroniosSaida.get(0).getValorEsperado().length];
+		resultadoSomaSaida = new double[listaNeuroniosSaida.get(0).getValorEsperado().length];
+		resultadoSomaEscondida = new double[NUMERODENEURONIOSESCONDIDA];
+		neuronioEscondida = new double[NUMERODENEURONIOSESCONDIDA+1];
+		somaDeltaEscondida = new double[NUMERODENEURONIOSESCONDIDA+1];
+		somaDeltaSaida = new double[NUMERODENEURONIOSESCONDIDA+1];
 	}
 
 	public void PreencherListaNeuronios(int doenca) {
-		int NUMERODECASOS = 100; // Para cada doenca criara 100 casos
+		int NUMERODECASOS = 10; // Para cada doenca criara 100 casos
 
 		Neuronio neuronioEntrada = new Neuronio();
 		Neuronio neuronioEscondido = new Neuronio();
@@ -172,10 +196,10 @@ public class TreinamentoController {
 			// Iniciando pesos do NE e no NS
 			//===================================================================
 			
-			// Gerar 5 pesos para cadamada escondida
-			double[] pesosEscondida = neuronioEscondido.InicializarPesos(5);
-			// Gerar 5 pesos para cadamada de saida
-			double[] pesosSaida = neuronioSaida.InicializarPesos(5);
+			// Gerar n pesos para cadamada escondida
+			double[] pesosEscondida = neuronioEscondido.InicializarPesos(NUMERODENEURONIOSESCONDIDA);
+			// Gerar n pesos para cadamada de saida
+			double[] pesosSaida = neuronioSaida.InicializarPesos(NUMERODENEURONIOSESCONDIDA);
 			
 			//===================================================================
 			// Iniciando valores de entrada e valores esperados pelo NS
@@ -190,14 +214,14 @@ public class TreinamentoController {
 			// Armazenando valores produzidos de forma aleatória
 			//===================================================================
 
-			neuronioEntrada.setValorEntrada(entradas); // Entradas da rede
+			neuronioEntrada.setValor(entradas); // Entradas da rede
 			neuronioEntrada.setDoenca(doenca);
 
-			neuronioEscondido.setePeso(pesosEscondida); // Escondido pesos da entrada
+			neuronioEscondido.setPesos(pesosEscondida); // Pesos da escondida com a entrada
 			neuronioEscondido.setDoenca(doenca);
 
-			neuronioSaida.setsPeso(pesosSaida); // Saida pesos
 			neuronioSaida.setValorEsperado(valoresEsperados); // Saida esperada
+			neuronioSaida.setPesos(pesosSaida); //Pesos da saida com a escondida
 			neuronioSaida.setDoenca(doenca);
 
 			//===================================================================
@@ -217,6 +241,11 @@ public class TreinamentoController {
 		for(int i =0; i < DOENCAS.length; i++){
 			PreencherListaNeuronios(DOENCAS[i]);
 		}
+	}
+	
+	private double FuncaoAtivacao(double valor){
+		double v = Math.exp(-valor);
+		return 1.0 / (1.0 +  (v));
 	}
 	
 	
