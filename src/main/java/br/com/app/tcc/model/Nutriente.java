@@ -1,4 +1,4 @@
-package br.com.app.iqoption.model;
+package br.com.app.tcc.model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

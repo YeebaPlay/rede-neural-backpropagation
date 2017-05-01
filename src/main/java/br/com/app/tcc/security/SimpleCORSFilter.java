@@ -1,4 +1,4 @@
-package br.com.app.iqoption.security;
+package br.com.app.tcc.security;
 
 import java.io.IOException;
 import java.rmi.ServerException;

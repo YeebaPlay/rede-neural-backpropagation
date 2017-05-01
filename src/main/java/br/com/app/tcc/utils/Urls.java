@@ -1,4 +1,4 @@
-package br.com.app.iqoption.utils;
+package br.com.app.tcc.utils;
 
 public interface Urls {
 	

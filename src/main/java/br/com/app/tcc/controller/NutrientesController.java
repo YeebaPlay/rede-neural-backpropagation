@@ -1,4 +1,4 @@
-package br.com.app.iqoption.controller;
+package br.com.app.tcc.controller;
 
 import java.util.List;
 
@@ -7,9 +7,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import br.com.app.iqoption.model.Nutriente;
-import br.com.app.iqoption.repository.NutrientesRepository;
-import br.com.app.iqoption.utils.*;
+
+import br.com.app.tcc.model.Nutriente;
+import br.com.app.tcc.repository.NutrientesRepository;
+import br.com.app.tcc.utils.*;
 
 @RestController
 @RequestMapping(Urls.NUTRIENTES)
@@ -17,7 +18,7 @@ public class NutrientesController {
 
 	@Autowired
 	private NutrientesRepository nutrientesRepository;
-	TreinamentoController treinamento = null;
+	TreinamentoController treinamento = new TreinamentoController();
 	
 	@RequestMapping(value="/find/by/{id}", method = RequestMethod.GET)
 	public List<Nutriente> findByNutrientes(@PathVariable("id") Integer id) {
@@ -26,13 +27,12 @@ public class NutrientesController {
 	
 	@RequestMapping(value="/treinamento", method = RequestMethod.GET)
 	public String TreinarRede() {
-		treinamento = new TreinamentoController();
-		treinamento.TreinamentoRede();
-		return "Treinado com sucesso!!";
+		String resultado = treinamento.TreinamentoRede();
+		return resultado;
 	}
 	
-	@RequestMapping(value="/funcionando", method = RequestMethod.GET)
+	@RequestMapping(value="/testerede", method = RequestMethod.GET)
 	public String MostrarMensagem() {
-		return "WebService funcionando...";
+		return "";
 	}
 }
