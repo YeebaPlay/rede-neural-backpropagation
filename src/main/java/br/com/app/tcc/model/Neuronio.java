@@ -1,30 +1,82 @@
 package br.com.app.tcc.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.Table;
+
+import org.junit.Ignore;
 
 @Entity
+@Table(name ="Neuronio")
 public class Neuronio {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	private double[] valor; //valor da rede
+	
+	@ManyToMany(cascade = CascadeType.ALL)
+	  @JoinTable(name="neuronio_valores",
+	             joinColumns={@JoinColumn(name="id_neuronio")},
+	             inverseJoinColumns={@JoinColumn(name="id_valor")})
+	  private List<Valor> valores;
 
-	private double[] valorEsperado; //Valor esperado da rede
+
+	@Column (name="doenca")
 	private int doenca; //qual doenca o neuronio esta treinando
 	
-	//Variaveis auxiliares
-	private double[] entradas; //Todas as entradas de um processamento
-	private double[] saidas; //Todas as saídas de um processamento
+	@ManyToMany(cascade = CascadeType.ALL)
+	  @JoinTable(name="neuronio_saida",
+	             joinColumns={@JoinColumn(name="id_neuronio_saida")},
+	             inverseJoinColumns={@JoinColumn(name="id_saida")})
+	private List<Saida> saidas; //Todas as saídas de um processamento
 	
-	public double[] respostaRede = new double[3];
+	
+	@Column (name="nome_doenca")
 	private String nomeDoenca;
 	
+	//Mostrar se ele é entrada, escondida ou saída
+	@Column (name="camada_neuronio")
+	private int camadaNeuronio;
+	
+	//Numero do prontuario
+	@Column (name="num_prontuario")
+	private int numProntuario;
+	
+	
+	public List<Valor> getValores() {
+		return valores;
+	}
+
+	public void setValores(List<Valor> valores) {
+		this.valores = valores;
+	}
+
+	public int getNumProntuario() {
+		return numProntuario;
+	}
+
+	public void setNumProntuario(int numProntuario) {
+		this.numProntuario = numProntuario;
+	}
+
+	public int getCamadaNeuronio() {
+		return camadaNeuronio;
+	}
+
+	public void setCamadaNeuronio(int camadaNeuronio) {
+		this.camadaNeuronio = camadaNeuronio;
+	}
 
 	public String getNomeDoenca() {
 		return nomeDoenca;
@@ -42,21 +94,6 @@ public class Neuronio {
 		this.id = id;
 	}
 
-	public double[] getValor() {
-		return valor;
-	}
-
-	public void setValor(double[] valor) {
-		this.valor = valor;
-	}
-
-	public double[] getValorEsperado() {
-		return valorEsperado;
-	}
-
-	public void setValorEsperado(double[] valorEsperado) {
-		this.valorEsperado = valorEsperado;
-	}
 
 	public int getDoenca() {
 		return doenca;
@@ -66,29 +103,20 @@ public class Neuronio {
 		this.doenca = doenca;
 	}
 
-	public double[] getEntradas() {
-		return entradas;
-	}
-
-	public void setEntradas(double[] entradas) {
-		this.entradas = entradas;
-	}
-
-	public double[] getSaidas() {
+	 public List<Saida> getSaidas() {
 		return saidas;
 	}
 
-	public void setSaidas(double[] saidas) {
+	public void setSaidas(List<Saida> saidas) {
 		this.saidas = saidas;
 	}
-	
 	
 	//=================================================================
 	//============================Funcoes==============================
 	//=================================================================
-	
-    
-    /**
+
+
+	/**
      * Gerar os intervalos de nutrientes
      * @param inicio
      * @param fim
@@ -108,9 +136,9 @@ public class Neuronio {
      * Iniciando valores de entrada de um processo
      * @return
      */
-    public double[] InicializarEntradas(int doenca){
-    	entradas = new double[6];
-    	
+    public List<Valor> InicializarEntradas(int doenca){
+   
+		List<Valor> listaValores = new ArrayList<>();
     	//saudavel = 0
     	//infarto = 1
     	//hipertigliceridemia = 2
@@ -119,76 +147,76 @@ public class Neuronio {
     
     	if(doenca == 0){ //saudavel
     		//CT ruim acima de 200
-        	entradas[0] = GerarValoresIntervaloNutriente(100, 200);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(100, 200)));
         	//HDL maior que 35
-        	entradas[1] = GerarValoresIntervaloNutriente(35, 120);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(35, 120)));
         	//LDL limite de 130
-        	entradas[2] = GerarValoresIntervaloNutriente(50, 130);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(50, 130)));
         	//glicose limite de 100
-        	entradas[3] = GerarValoresIntervaloNutriente(30, 100);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(30, 100)));
         	//TG limite de 130
-        	entradas[4] = GerarValoresIntervaloNutriente(50, 130);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(50, 130)));
     	}else if(doenca == 1){ //infarto
     		//CT ruim acima de 200
-        	entradas[0] = GerarValoresIntervaloNutriente(201, 280) * 10; //201, 280
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(201, 280) * 10)); //201, 280
         	//HDL maior que 35
-        	entradas[1] = GerarValoresIntervaloNutriente(35, 120);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(35, 120)));
         	//LDL limite de 130
-        	entradas[2] = GerarValoresIntervaloNutriente(50, 130);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(50, 130)));
         	//glicose limite de 100
-        	entradas[3] = GerarValoresIntervaloNutriente(30, 100);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(30, 100)));
         	//TG limite de 130
-        	entradas[4] = GerarValoresIntervaloNutriente(50, 130);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(50, 130)));
     	}else if(doenca == 2){ //hipertigliceridemia
     		//CT ruim acima de 200
-        	entradas[0] = GerarValoresIntervaloNutriente(100, 200);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(100, 200)));
         	//HDL maior que 35
-        	entradas[1] = GerarValoresIntervaloNutriente(35, 120);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(35, 120)));
         	//LDL limite de 130
-        	entradas[2] = GerarValoresIntervaloNutriente(50, 130);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(50, 130)));
         	//glicose limite de 100
-        	entradas[3] = GerarValoresIntervaloNutriente(30, 100);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(30, 100)));
         	//TG limite de 130
-        	entradas[4] = GerarValoresIntervaloNutriente(131, 160) * 10; //131, 160
+    		listaValores.add(new Valor((double)  GerarValoresIntervaloNutriente(131, 160) * 10)); //131, 160
     	}else if(doenca == 3){//derrame
     		//CT ruim acima de 200
-        	entradas[0] = GerarValoresIntervaloNutriente(100, 200);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(100, 200)));
         	//HDL maior que 35
-        	entradas[1] = GerarValoresIntervaloNutriente(35, 120);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(35, 120)));
         	//LDL limite de 130
-        	entradas[2] = GerarValoresIntervaloNutriente(131, 180) * 10; //131, 180
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(131, 180) * 10)); //131, 180
         	//glicose limite de 100
-        	entradas[3] = GerarValoresIntervaloNutriente(30, 100);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(30, 100)));
         	//TG limite de 130
-        	entradas[4] = GerarValoresIntervaloNutriente(50, 130);
+    		listaValores.add(new Valor((double) GerarValoresIntervaloNutriente(50, 130)));
     	}
     	
-    	entradas[5] = GerarNumeroAleatorio(); //Bias
-    	return entradas;
+    	listaValores.add(new Valor((double) GerarNumeroAleatorio())); //Bias
+    	return listaValores;
     }
     
-    public double[] InicializarValoresEsperados(int doenca){
+    public List<Saida> InicializarValoresEsperados(int doenca){
     	
-    	saidas = new double[3];
+    	List<Saida> listaValores = new ArrayList<>();
     	
     	if(doenca == 0){ //saudavel
-    		saidas[0] = -1;
-    		saidas[1] = -1;
-    		saidas[2] = -1;
+    		listaValores.add(new Saida(-1.0));
+    		listaValores.add(new Saida(-1.0));
+    		listaValores.add(new Saida(-1.0));
     	}else if(doenca == 1){ //infarto
-    		saidas[0] = 1;
-    		saidas[1] = -1;
-    		saidas[2] = -1;
+    		listaValores.add(new Saida(1.0));
+    		listaValores.add(new Saida(-1.0));
+    		listaValores.add(new Saida(-1.0));
     	}else if(doenca == 2){ //hipertigliceridemia
-    		saidas[0] = -1;
-    		saidas[1] = 1;
-    		saidas[2] = -1;
+    		listaValores.add(new Saida(-1.0));
+    		listaValores.add(new Saida( 1.0));
+    		listaValores.add(new Saida(-1.0));
     	}else if(doenca == 3){//derrame
-    		saidas[0] = -1;
-    		saidas[1] = -1;
-    		saidas[2] = 1;
+    		listaValores.add(new Saida(-1.0));
+    		listaValores.add(new Saida(-1.0));
+    		listaValores.add(new Saida(1.0));
     	}
-    	return saidas;
+    	return listaValores;
     }
    
 }

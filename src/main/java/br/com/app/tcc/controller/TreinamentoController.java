@@ -1,10 +1,18 @@
 package br.com.app.tcc.controller;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import br.com.app.tcc.config.Config;
 import br.com.app.tcc.model.Neuronio;
+import br.com.app.tcc.model.Saida;
+import br.com.app.tcc.model.Valor;
+import br.com.app.tcc.repository.NeuroniosRepository;
+import br.com.app.tcc.repository.SaidaRepository;
+import br.com.app.tcc.repository.ValorRepository;
 import br.com.app.tcc.utils.Utils;
 
 public class TreinamentoController {
@@ -43,10 +51,23 @@ public class TreinamentoController {
 	double resultadoDerivadaFuncaoAtivacao;
 	double resultadoNovosPesoCamadaEscondida;
 	double resultadoNovosPesoCamadaSaida;
+	public double[] respostaRede = new double[3];
 	
 	ArrayList<Neuronio> listaNeuroniosEntrada = new ArrayList<>();
 	ArrayList<Neuronio> listaNeuroniosSaida = new ArrayList<>();
 	ArrayList<Neuronio> listaNeuroniosEscondido = new ArrayList<>();
+	
+	@Autowired
+	private NeuroniosRepository bancoNeuronio;
+	
+	@Autowired
+	private ValorRepository bancoValor;
+	
+	@Autowired
+	private SaidaRepository bancoSaida;
+	
+	
+	private int indiceProntuario = 0;
 	
 	int tamanhoLista = 0;
 
@@ -59,6 +80,26 @@ public class TreinamentoController {
 		//Iniciando todos os arrays
 		iniciarVariaveis();
 		tamanhoLista = listaNeuroniosEntrada.size(); 
+		
+		for (Neuronio n : listaNeuroniosEntrada) {
+			
+			for(Valor v : n.getValores()) {
+				bancoValor.save(v);
+			}
+			
+			bancoNeuronio.save(n);
+		}
+		
+		for (Neuronio n : listaNeuroniosSaida) {
+			
+			for(Saida s : n.getSaidas()) {
+				bancoSaida.save(s);
+			}
+			
+			bancoNeuronio.save(n);
+		}
+	
+		
 		//////////////// PASSO 1 ////////////
 		while(Config.CICLO > cicloAtual){
 			erroQuadraticoParcial = 0;
@@ -73,7 +114,7 @@ public class TreinamentoController {
 					//for cada neuronio da camada de entrada
 					for(int j = 0; j < Config.NUMERODENEURONIOSENTRADA; j++){
 						//Soma do valor da multiplicacao camada de entrada sobre a escondida
-						valorEntradaRede = listaNeuroniosEntrada.get(posicaoAtualLista).getValor()[j];
+						valorEntradaRede = listaNeuroniosEntrada.get(posicaoAtualLista).getValores().get(j).getValor();
 						pesoRede = pesosEscondida[i][j];
 						neuronioEscondida[i] += (valorEntradaRede * pesoRede);
 					}
@@ -110,7 +151,7 @@ public class TreinamentoController {
 				
 				for (int i = 0; i < Config.NUMERONEURONIOSAIDA; i++) {
 					//Obtendo a saida desejada
-					saidaDesejada = listaNeuroniosSaida.get(posicaoAtualLista).getValorEsperado()[i];
+					saidaDesejada = listaNeuroniosSaida.get(posicaoAtualLista).getSaidas().get(i).getValor();
 	
 					resultadoDerivadaFuncaoAtivacao = Utils.DerivadaDaFuncaoDeAtivacaoBipolar(neuronioSaida[i]);
 					//System.out.println("Derivada de: "+ neuronioSaida[i] +" = "+resultadoDerivadaFuncaoAtivacao);
@@ -154,7 +195,7 @@ public class TreinamentoController {
 				for (int i = 0; i < Config.NUMERODENEURONIOSESCONDIDA; i++) {
 					for(int j = 0; j < Config.NUMERODENEURONIOSENTRADA; j++){
 						//variacao dos pesos
-						deltaPesoEscondida[i][j] = (Config.TAXAAPRENDIZAGEM * sigmaEscondida[i] * (listaNeuroniosEntrada.get(posicaoAtualLista).getValor()[j]));
+						deltaPesoEscondida[i][j] = (Config.TAXAAPRENDIZAGEM * sigmaEscondida[i] * (listaNeuroniosEntrada.get(posicaoAtualLista).getValores().get(j).getValor()));
 					}
 					// variacao do bias
 					deltaPesoEscondida[i][Config.NUMERODENEURONIOSENTRADA] = (Config.TAXAAPRENDIZAGEM * sigmaEscondida[i]);
@@ -212,7 +253,7 @@ public class TreinamentoController {
 				//for cada neuronio da camada de entrada
 				for(int j = 0; j < Config.NUMERODENEURONIOSENTRADA; j++){
 					//Soma do valor da multiplicacao camada de entrada sobre a escondida
-					valorEntradaRede = listaNeuroniosEntrada.get(posicaoAtualLista).getValor()[j];
+					valorEntradaRede = listaNeuroniosEntrada.get(posicaoAtualLista).getValores().get(j).getValor();
 					pesoRede = pesosEscondida[i][j];
 					neuronioEscondidaTeste[i] += (valorEntradaRede * pesoRede);
 				}
@@ -242,22 +283,22 @@ public class TreinamentoController {
 				// Agora temos que aplicar a funcao de ativacao
 				// Funcao de ativacao = (2 / (1 + exp(-x)) -1
 				resultadoSomaSaidaTeste[i] = Utils.FuncaoAtivacaoBipolar(neuronioSaidaTeste[i]);
-				listaNeuroniosSaida.get(posicaoAtualLista).respostaRede[i] = resultadoSomaSaidaTeste[i];
+				respostaRede[i] = resultadoSomaSaidaTeste[i];
 				
-				if(listaNeuroniosSaida.get(posicaoAtualLista).respostaRede[i] > 0){
+				if(respostaRede[i] > 0){
 					
-					if((listaNeuroniosSaida.get(posicaoAtualLista).respostaRede[i] + 0.2) >= listaNeuroniosSaida.get(posicaoAtualLista).getValorEsperado()[i]){
+					if((respostaRede[i] + 0.2) >= listaNeuroniosSaida.get(posicaoAtualLista).getSaidas().get(i).getValor()){
 						//listaNeuroniosSaida.get(posicaoAtualLista).respostaRede[i] = 1; 
 					}
 				}else{
-					if((listaNeuroniosSaida.get(posicaoAtualLista).respostaRede[i] - 0.2) <= listaNeuroniosSaida.get(posicaoAtualLista).getValorEsperado()[i]){
+					if((respostaRede[i] - 0.2) <= listaNeuroniosSaida.get(posicaoAtualLista).getSaidas().get(i).getValor()){
 						//listaNeuroniosSaida.get(posicaoAtualLista).respostaRede[i] = -1; 
 					}
 				}
 			}
 		
 			
-			if(listaNeuroniosSaida.get(posicaoAtualLista).getValorEsperado()[0] == listaNeuroniosSaida.get(posicaoAtualLista).respostaRede[0] && listaNeuroniosSaida.get(posicaoAtualLista).getValorEsperado()[1] == listaNeuroniosSaida.get(posicaoAtualLista).respostaRede[1]){
+			if(listaNeuroniosSaida.get(posicaoAtualLista).getSaidas().get(0).getValor() == respostaRede[0] && listaNeuroniosSaida.get(posicaoAtualLista).getSaidas().get(1).getValor() == respostaRede[1]){
 				acerto++;
 			}
 			
@@ -265,7 +306,7 @@ public class TreinamentoController {
 			
 			for(int j = 0; j < Config.NUMERONEURONIOSAIDA; j++){
 				
-				res += "Resultado esperado:  "+ listaNeuroniosSaida.get(posicaoAtualLista).getValorEsperado()[j]+" Resultado obtido " + listaNeuroniosSaida.get(posicaoAtualLista).respostaRede[j]+"<br />";
+				res += "Resultado esperado:  "+ listaNeuroniosSaida.get(posicaoAtualLista).getSaidas().get(j).getValor() +" Resultado obtido " + respostaRede[j]+"<br />";
 				
 			}
 			
@@ -303,11 +344,15 @@ public class TreinamentoController {
 	}
 
 	public void PreencherListaNeuronios(int doenca) {
-		int NUMERODECASOS = 200; // Para cada doenca criara n casos
+		int NUMERODECASOS = Config.NUMERODECASOS; // Para cada doenca criara n casos
 		System.out.println("Doenca: "+doenca+" sendo gerada");
 		pesosEscondida = new double[Config.NUMERODENEURONIOSESCONDIDA+1][Config.NUMERODENEURONIOSENTRADA+1]; //Bias +1
 		pesosSaida = new double[Config.NUMERONEURONIOSAIDA+1][Config.NUMERODENEURONIOSESCONDIDA+1]; //Bias +1
 		String nomeDoenca = null;
+		
+		List<Valor> listaValores = new ArrayList<>();
+		List<Saida> listaSaidas = new ArrayList<>();
+		
 		//===================================================================
 		// Iniciando pesos do NE e no NS
 		//===================================================================
@@ -337,26 +382,29 @@ public class TreinamentoController {
 			//===================================================================
 			// Iniciando valores de entrada e valores esperados pelo NS
 			//===================================================================
-			
+		
 			// Gerar NUMERODECASOS entrada para 
-			double[] entradas = neuronioEntrada.InicializarEntradas(doenca); // Saudavel
+			listaValores = neuronioEntrada.InicializarEntradas(doenca); // Saudavel
 			// Gerar 5 saidas esperadas
-			double[] valoresEsperados = neuronioSaida.InicializarValoresEsperados(doenca); // Saudavel
+			listaSaidas = neuronioSaida.InicializarValoresEsperados(doenca); // Saudavel
 			
 			//===================================================================
 			// Armazenando valores produzidos de forma aleatória
 			//===================================================================
 
-			neuronioEntrada.setValor(entradas); // Entradas da rede
+			neuronioEntrada.setValores(listaValores); // Entradas da rede
 			neuronioEntrada.setDoenca(doenca);
 			neuronioEntrada.setNomeDoenca(nomeDoenca);
+			neuronioEntrada.setCamadaNeuronio(1);
 
 			neuronioEscondido.setDoenca(doenca);
 			neuronioEscondido.setNomeDoenca(nomeDoenca);
+			neuronioEscondido.setCamadaNeuronio(2);
 
-			neuronioSaida.setValorEsperado(valoresEsperados); // Saida esperada
+			neuronioSaida.setSaidas(listaSaidas); // Saida esperada
 			neuronioSaida.setDoenca(doenca);
 			neuronioSaida.setNomeDoenca(nomeDoenca);
+			neuronioSaida.setCamadaNeuronio(3);
 
 			//===================================================================
 			// Repassando valores as listas que serão trabalhadas no algoritmo
