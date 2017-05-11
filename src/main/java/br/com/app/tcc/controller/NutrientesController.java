@@ -18,21 +18,25 @@ public class NutrientesController {
 
 	@Autowired
 	private NutrientesRepository nutrientesRepository;
-	TreinamentoController treinamento = new TreinamentoController();
 	
-	@RequestMapping(value="/find/by/{id}", method = RequestMethod.GET)
-	public List<Nutriente> findByNutrientes(@PathVariable("id") Integer id) {
-		return nutrientesRepository.findByNutriente(id);
-	}
+	@Autowired
+	TreinamentoController treinamento;
 	
 	@RequestMapping(value="/treinamento", method = RequestMethod.GET)
 	public String TreinarRede() {
-		String resultado = treinamento.TreinamentoRede();
+		String resultado = treinamento.TreinamentoRede(0);
 		return resultado;
 	}
 	
-	@RequestMapping(value="/testerede", method = RequestMethod.GET)
+	@RequestMapping(value="/gerar-valores", method = RequestMethod.GET)
 	public String MostrarMensagem() {
-		return "";
+		treinamento.SalvarListaNeuronios();
+		return "Criado com sucesso!!";
+	}
+	
+	@RequestMapping(value="/encontrar-nova-doenca", method = RequestMethod.GET)
+	public String EncontrarNovaDoenca() {
+		String resultado = treinamento.TreinamentoRede(1);
+		return resultado;
 	}
 }
